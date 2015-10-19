@@ -33,43 +33,56 @@ getUnivMatches <- function(satwr, satmt, satvr, pctrank, topn) {
                 filter(ScoreDifference <= 60) %>%
                 arrange(ScoreDifference)
         
-        # print(dim(newDataSorted))
-        matchesMid <- newDataSorted[1:min(topn,dim(newDataSorted)[1]),]
+        noMatches <- dim(newDataSorted)[1]
+        if (noMatches < topn) {
+                matchesMid <- newDataSorted
+        }
+        else {
+                matchesMid <- newDataSorted[1:min(topn,dim(newDataSorted)[1]),]
+        }
         # print(matchesMid)
-        matchesMid$Location = paste(matchesMid$CITY, ", ", matchesMid$STABBR, sep="")
-        matchesMid <- matchesMid %>%
-                select(INSTNM, Location, 
-                       SATVR25, SATVRMID, SATVR75, 
-                       SATWR25, SATWRMID, SATWR75, 
-                       SATMT25, SATMTMID, SATMT75, 
-                       ScoreDifference) %>%
-                rename("Institute" = INSTNM,
-                       "Reading 25" = SATVR25,
-                       "Reading 50" = SATVRMID,
-                       "Reading 75" = SATVR75,
-                       "Writing 25" = SATWR25,
-                       "Writing 50" = SATWRMID,
-                       "Writing 75" = SATWR75,
-                       "Math 25" = SATMT25,
-                       "Math 50" = SATMTMID,
-                       "Math 75" = SATMT75
-                )
-        library(googleVis)
-        matchesMid$hint <- paste(matchesMid$Institute, ", ", matchesMid$Location, sep="")
-        matchesMid$MatchScore <- 100 - matchesMid$ScoreDifference
-        Geo <- gvisGeoChart(matchesMid, locationvar='Location', colorvar='MatchScore', hovervar='hint',
-                          options=list(region='US', height=400, width=600,
-                                       displayMode = 'markers', resolution = "metros", backgroundColor = "lightblue",
-                                       enableRegionInteractivity = TRUE,
-                                       colorAxis = "{colors:['lightgreen', 'green', 'darkgreen']}"))
-                                       # colors='[0xe5f5f9, 0x99d8c9, 0x2ca25f]'))
-        dataTab <- gvisTable(matchesMid[,! names(matchesMid) %in% c("hint")], options = list(page='enable', 
-                                                                                             width='80%', 
-                                                                                             height='automatic',
-                                                                                             frozenColumns=2))
-        plotData <- gvisMerge(Geo, dataTab)
+        
+        if (noMatches > 0) {
+                matchesMid$Location = paste(matchesMid$CITY, ", ", matchesMid$STABBR, sep="")
+                matchesMid <- matchesMid %>%
+                        select(INSTNM, Location, 
+                               SATVR25, SATVRMID, SATVR75, 
+                               SATWR25, SATWRMID, SATWR75, 
+                               SATMT25, SATMTMID, SATMT75, 
+                               ScoreDifference) %>%
+                        rename("Institute" = INSTNM,
+                               "Reading 25" = SATVR25,
+                               "Reading 50" = SATVRMID,
+                               "Reading 75" = SATVR75,
+                               "Writing 25" = SATWR25,
+                               "Writing 50" = SATWRMID,
+                               "Writing 75" = SATWR75,
+                               "Math 25" = SATMT25,
+                               "Math 50" = SATMTMID,
+                               "Math 75" = SATMT75
+                        )
+
+                matchesMid$hint <- paste(matchesMid$Institute, ", ", matchesMid$Location, sep="")
+                matchesMid$MatchScore <- 100 - matchesMid$ScoreDifference
+                Geo <- gvisGeoChart(matchesMid, locationvar='Location', colorvar='MatchScore', hovervar='hint',
+                                    options=list(region='US', height=400, width=600,
+                                                 displayMode = 'markers', resolution = "metros", backgroundColor = "lightblue",
+                                                 enableRegionInteractivity = TRUE,
+                                                 colorAxis = "{colors:['lightgreen', 'green', 'darkgreen']}"))
+                # colors='[0xe5f5f9, 0x99d8c9, 0x2ca25f]'))
+                dataTab <- gvisTable(matchesMid[,! names(matchesMid) %in% c("hint")], options = list(page='enable', 
+                                                                                                     width='80%', 
+                                                                                                     height='automatic',
+                                                                                                     frozenColumns=2))
+                plotData <- gvisMerge(Geo, dataTab)
+        }
+
+                
         toret <- function(typ) {
-                if (typ == "plot") {
+                if (typ == "count") {
+                        noMatches
+                }
+                else if (typ == "plot") {
                         plotData
                 }
                 else if (typ == "data") {
@@ -85,17 +98,29 @@ server <- function(input, output) {
                 getUnivMatches(input$satwrite, input$satmath, input$satread, input$pctrank, input$topn)
         })
         output$result_header <- renderText({
-                matchData <- plotInfo()("data")
-                "Here are the institutions that match you the closest in SAT scores"
+                pi <- plotInfo()
+                if (pi("count") > 0) {
+                        matchData <- pi("data")
+                        "Here are the institutions that match you the closest in SAT scores"
+                }
         })
         output$summary_info <- renderText({
-                matchData <- plotInfo()("data")
-                paste("Your search resulted in <b>", dim(matchData)[1], "</b> matches.</p>")
+                pi <- plotInfo()
+                if (pi("count") > 0) {
+                        matchData <- pi("data")
+                        paste("Your search resulted in <b>", dim(matchData)[1], "</b> matches.</p>")
+                }
+                else {
+                        paste("Your search resulted in <b>no</b> matches.</p>")
+                }
         })
         output$results <- renderGvis({
                 # print("Here")
-                toPlot <- plotInfo()("plot")
-                toPlot
+                pi <- plotInfo()
+                if (pi("count") > 0) {
+                        toPlot <- plotInfo()("plot")
+                        toPlot
+                }
         })
 }
 
