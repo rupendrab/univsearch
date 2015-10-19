@@ -17,6 +17,7 @@ shinyUI(fluidPage(
                         radioButtons("pctrank", "Your preferred percentile rank within institution:",
                                      c("25th" = 25, "50th" = 50, "75th" = 75),
                                      selected = 50),
+                        numericInput("topn", "Show top matches: ", min=20, max=100, value=20, width="150px"),
                         actionButton("goButton", "Find"),
                         actionButton("helpButton", "Help")
                 ),

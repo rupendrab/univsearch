@@ -16,7 +16,7 @@ myData <- myData %>% mutate(SATMT25 = as.numeric(SATMT25),
 newData <- myData[,c(c(1:6), grep("^SAT", colnames(myData)))]
 print("Read Data File...")
 
-getUnivMatches <- function(satwr, satmt, satvr, pctrank) {
+getUnivMatches <- function(satwr, satmt, satvr, pctrank, topn) {
         if (pctrank == 25) {
                 newDataSorted <- newData %>%
                         mutate(ScoreDifference = abs(satwr - SATWR25) + abs(satmt - SATMT25) + abs(satvr - SATVR25))
@@ -34,7 +34,7 @@ getUnivMatches <- function(satwr, satmt, satvr, pctrank) {
                 arrange(ScoreDifference)
         
         # print(dim(newDataSorted))
-        matchesMid <- newDataSorted[1:min(20,dim(newDataSorted)[1]),]
+        matchesMid <- newDataSorted[1:min(topn,dim(newDataSorted)[1]),]
         # print(matchesMid)
         matchesMid$Location = paste(matchesMid$CITY, ", ", matchesMid$STABBR, sep="")
         matchesMid <- matchesMid %>%
@@ -80,7 +80,7 @@ getUnivMatches <- function(satwr, satmt, satvr, pctrank) {
 server <- function(input, output) {
         plotInfo <- eventReactive(input$goButton, {
                 # print(c(input$satwrite, input$satmath, input$satread, input$pctrank))
-                getUnivMatches(input$satwrite, input$satmath, input$satread, input$pctrank)
+                getUnivMatches(input$satwrite, input$satmath, input$satread, input$pctrank, input$topn)
         })
         output$result_header <- renderText({
                 matchData <- plotInfo()("data")

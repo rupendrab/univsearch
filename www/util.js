@@ -8,12 +8,6 @@ $( document ).ready(function() {
 
    $("#goButton").click(function(event){
      showTab('Results')
-     /*
-     resultTab = $("a[data-value='Results']")
-     if ( ! resultTab.parent().hasClass("active") ) {
-       resultTab.click()
-     }
-     */
    });
 
    $("#helpButton").click(function(event) {
