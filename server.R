@@ -57,12 +57,14 @@ getUnivMatches <- function(satwr, satmt, satvr, pctrank, topn) {
         library(googleVis)
         matchesMid$hint <- paste(matchesMid$Institute, ", ", matchesMid$Location, sep="")
         matchesMid$MatchScore <- 100 - matchesMid$ScoreDifference
-        Geo <- gvisGeoMap(matchesMid, locationvar='Location', numvar='MatchScore', hovervar='hint',
+        Geo <- gvisGeoChart(matchesMid, locationvar='Location', colorvar='MatchScore', hovervar='hint',
                           options=list(region='US', height=400, width=600,
-                                       dataMode='markers',
-                                       colors='[0xFF8747, 0xFFB581, 0xc06000]'))
+                                       displayMode = 'markers', resolution = "metros", backgroundColor = "lightblue",
+                                       enableRegionInteractivity = TRUE,
+                                       colorAxis = "{colors:['lightgreen', 'green', 'darkgreen']}"))
+                                       # colors='[0xe5f5f9, 0x99d8c9, 0x2ca25f]'))
         dataTab <- gvisTable(matchesMid[,! names(matchesMid) %in% c("hint")], options = list(page='enable', 
-                                                                                             width='90%', 
+                                                                                             width='80%', 
                                                                                              height='automatic',
                                                                                              frozenColumns=2))
         plotData <- gvisMerge(Geo, dataTab)

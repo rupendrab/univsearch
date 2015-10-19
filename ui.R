@@ -9,7 +9,7 @@ shinyUI(fluidPage(
         div(id="mainheader", h4("Find your University")),
         sidebarLayout(
                 sidebarPanel(
-                        width = 2,
+                        width = 3,
                         h3("Enter SAT Scores"),
                         numericInput("satread", "Reading:", min = 200, max = 800, value = 500, width = "100px"),
                         numericInput("satwrite", "Writing:", min = 200, max = 800, value = 500, width = "100px"),
