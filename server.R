@@ -4,15 +4,17 @@ library(googleVis)
 
 recentData <- read.csv("www/data/Most_Recent_Scorecard_Data.csv", stringsAsFactors = FALSE)
 myData <- recentData %>% filter(SATWRMID != "NULL")
-myData <- myData %>% mutate(SATVR25 = as.numeric(SATVR25),
-                            SATVR75 = as.numeric(SATVR75),
-                            SATVRMID = as.numeric(SATVRMID))
-myData <- myData %>% mutate(SATWR25 = as.numeric(SATWR25),
-                            SATWR75 = as.numeric(SATWR75),
-                            SATWRMID = as.numeric(SATWRMID))
-myData <- myData %>% mutate(SATMT25 = as.numeric(SATMT25),
-                            SATMT75 = as.numeric(SATMT75),
-                            SATMTMID = as.numeric(SATMTMID))
+suppressWarnings({
+        myData <- myData %>% mutate(SATVR25 = as.numeric(SATVR25),
+                                    SATVR75 = as.numeric(SATVR75),
+                                    SATVRMID = as.numeric(SATVRMID))
+        myData <- myData %>% mutate(SATWR25 = as.numeric(SATWR25),
+                                    SATWR75 = as.numeric(SATWR75),
+                                    SATWRMID = as.numeric(SATWRMID))
+        myData <- myData %>% mutate(SATMT25 = as.numeric(SATMT25),
+                                    SATMT75 = as.numeric(SATMT75),
+                                    SATMTMID = as.numeric(SATMTMID))
+})
 newData <- myData[,c(c(1:6), grep("^SAT", colnames(myData)))]
 print("Read Data File...")
 
@@ -68,7 +70,9 @@ getUnivMatches <- function(satwr, satmt, satvr, pctrank, topn) {
                                     options=list(region='US', height=400, width=600,
                                                  displayMode = 'markers', resolution = "metros", backgroundColor = "lightblue",
                                                  enableRegionInteractivity = TRUE,
-                                                 colorAxis = "{colors:['lightgreen', 'green', 'darkgreen']}"))
+                                                 colorAxis = "{colors:['lightgreen', 'darkgreen']}",
+                                                 markerOpacity=0.6,
+                                                 forceIFrame='TRUE'))
                 # colors='[0xe5f5f9, 0x99d8c9, 0x2ca25f]'))
                 dataTab <- gvisTable(matchesMid[,! names(matchesMid) %in% c("hint")], options = list(page='enable', 
                                                                                                      width='80%', 
@@ -87,6 +91,9 @@ getUnivMatches <- function(satwr, satmt, satvr, pctrank, topn) {
                 }
                 else if (typ == "data") {
                         matchesMid
+                }
+                else if (typ == "chartonly") {
+                        Geo
                 }
         }
         toret
@@ -123,5 +130,5 @@ server <- function(input, output) {
                 }
         })
 }
-
+print(sessionInfo())
 shinyServer(server)
