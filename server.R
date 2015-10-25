@@ -17,6 +17,7 @@ suppressWarnings({
 })
 newData <- myData[,c(c(1:6), grep("^SAT", colnames(myData)))]
 print("Read Data File...")
+print(dim(newData))
 
 getUnivMatches <- function(satwr, satmt, satvr, pctrank, topn) {
         if (pctrank == 25) {
